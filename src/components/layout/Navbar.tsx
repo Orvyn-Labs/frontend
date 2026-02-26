@@ -43,26 +43,28 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-white/5 bg-background/60 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg shrink-0">
-            <FlaskConical className="h-5 w-5 text-blue-500" />
-            <span>DChain</span>
+          <Link href="/" className="flex items-center gap-2.5 font-black text-xl tracking-tighter group shrink-0">
+            <div className="bg-blue-500 rounded-lg p-1 group-hover:rotate-12 transition-transform duration-300 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+              <FlaskConical className="h-5 w-5 text-white" />
+            </div>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 group-hover:to-blue-400 transition-all">DChain</span>
           </Link>
 
           {/* Nav links */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/5">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200",
                   pathname.startsWith(href)
-                    ? "text-foreground bg-accent"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? "text-white bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                    : "text-muted-foreground hover:text-white hover:bg-white/5"
                 )}
               >
                 {label}
@@ -73,11 +75,13 @@ export function Navbar() {
           {/* Right section */}
           <div className="flex items-center gap-3">
             <DktBalance />
-            <ConnectButton
-              accountStatus="avatar"
-              chainStatus="icon"
-              showBalance={false}
-            />
+            <div className="scale-90 sm:scale-100 origin-right">
+              <ConnectButton
+                accountStatus="avatar"
+                chainStatus="icon"
+                showBalance={false}
+              />
+            </div>
           </div>
         </div>
       </div>

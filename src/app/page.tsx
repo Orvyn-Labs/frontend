@@ -1,102 +1,109 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FlaskConical, BarChart3, Coins, ArrowRight } from "lucide-react";
+"use client";
+
+import { HeroSection } from "@/components/home/HeroSection";
+import { FeatureCard } from "@/components/home/FeatureCard";
+import { FlaskConical, BarChart3, Coins } from "lucide-react";
 
 const FEATURES = [
   {
     icon: FlaskConical,
     title: "Fund Research",
     description:
-      "Donate ETH directly to research projects. Funds are held in a smart contract pool and released when funding goals are met.",
+      "Direct ETH contributions to research. Funds are securely managed via FundingPool and only released when goals are achieved.",
   },
   {
     icon: Coins,
     title: "Stake DKT Tokens",
     description:
-      "Stake Dikti Tokens to earn simulated yield rewards. The O(1) reward-index algorithm ensures fair distribution regardless of participant count.",
+      "Stake tokens to earn rewards. Our O(1) reward-index algorithm guarantees gas-efficient yield distribution even with thousands of users.",
   },
   {
     icon: BarChart3,
-    title: "Gas Analytics",
+    title: "Gas Benchmarking",
     description:
-      "Track real-time gas consumption across all platform operations. L2 execution gas and L1 blob fees are captured for thesis benchmarking.",
+      "Comprehensive analytics for on-chain operations. Analyze gas consumption across 4 layers of smart contract complexity.",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
-      {/* Hero */}
-      <section className="text-center space-y-6 pt-8">
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm text-blue-400">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-          Deployed on Base Sepolia Testnet
+    <div className="relative min-h-[calc(100vh-64px)] w-full overflow-hidden bg-grid-pattern">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-16">
+        
+        {/* Hero Section */}
+        <HeroSection />
+
+        {/* Features Section */}
+        <div className="space-y-12">
+          <div className="text-center space-y-4">
+            <h2 className="text-sm uppercase tracking-widest text-blue-400 font-bold">Key Platform Features</h2>
+            <p className="text-3xl font-bold tracking-tight">Protocol Mechanism Design</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {FEATURES.map((feature, i) => (
+              <FeatureCard key={feature.title} index={i} {...feature} />
+            ))}
+          </div>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-          Decentralized Research
-          <br />
-          <span className="text-blue-500">Crowdfunding Platform</span>
-        </h1>
+        {/* Architecture Grid Section */}
+        <section className="rounded-3xl border border-white/5 bg-white/5 backdrop-blur-xl p-8 md:p-12 space-y-8 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/20 transition-all duration-700" />
+          
+          <div className="space-y-2">
+            <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-50">
+              Bachelor Thesis Case Study
+            </h2>
+            <h3 className="text-3xl font-bold">Benchmark Layers</h3>
+            <p className="text-muted-foreground max-w-xl">
+              DChain evaluates gas performance across four distinct smart contract complexity layers.
+            </p>
+          </div>
 
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          DChain enables researchers to raise funds through blockchain-based crowdfunding.
-          Built on Base Network as part of a bachelor thesis analyzing smart contract
-          gas consumption and performance at scale.
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button asChild size="lg">
-            <Link href="/projects">
-              Browse Projects <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/stake">Stake DKT</Link>
-          </Button>
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/analytics">View Analytics</Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {FEATURES.map(({ icon: Icon, title, description }) => (
-          <Card key={title} className="bg-card/50">
-            <CardHeader className="pb-3">
-              <div className="rounded-lg bg-blue-500/10 w-10 h-10 flex items-center justify-center mb-2">
-                <Icon className="h-5 w-5 text-blue-500" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { 
+                label: "Layer 1", 
+                title: "Direct Donation", 
+                detail: "FundingPool.donate()", 
+                color: "from-blue-500/20 to-blue-400/5", 
+                border: "border-blue-500/20" 
+              },
+              { 
+                label: "Layer 2", 
+                title: "Staking Operations", 
+                detail: "StakingVault.stake()", 
+                color: "from-violet-500/20 to-violet-400/5", 
+                border: "border-violet-500/20" 
+              },
+              { 
+                label: "Layer 3", 
+                title: "Simulated Yield", 
+                detail: "YieldDistributor.claimYield()", 
+                color: "from-amber-500/20 to-amber-400/5", 
+                border: "border-amber-500/20" 
+              },
+              { 
+                label: "Layer 4", 
+                title: "Deployment", 
+                detail: "ProjectFactory.create()", 
+                color: "from-red-500/20 to-red-400/5", 
+                border: "border-red-500/20" 
+              },
+            ].map(({ label, title, detail, color, border }) => (
+              <div 
+                key={label} 
+                className={`p-6 rounded-2xl border ${border} bg-gradient-to-br ${color} space-y-2 hover:scale-105 transition-transform duration-300 backdrop-blur-sm`}
+              >
+                <span className="text-[10px] font-black tracking-widest uppercase opacity-70">{label}</span>
+                <p className="font-bold text-sm tracking-tight">{title}</p>
+                <p className="text-muted-foreground font-mono text-[10px] truncate opacity-80">{detail}</p>
               </div>
-              <CardTitle className="text-base">{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
+            ))}
+          </div>
+        </section>
 
-      {/* Architecture note */}
-      <section className="rounded-xl border border-border bg-card/30 p-6 space-y-3">
-        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-          Thesis Architecture
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
-          {[
-            { label: "L1 — Direct Donation", detail: "FundingPool.donate()", color: "text-blue-400" },
-            { label: "L2 — Staking Operations", detail: "StakingVault.stake()", color: "text-violet-400" },
-            { label: "L3 — Simulated Yield", detail: "YieldDistributor.claimYield()", color: "text-amber-400" },
-            { label: "L4 — Contract Deployment", detail: "ProjectFactory.createProject()", color: "text-red-400" },
-          ].map(({ label, detail, color }) => (
-            <div key={label} className="space-y-1">
-              <p className={`font-medium ${color}`}>{label}</p>
-              <p className="text-muted-foreground font-mono text-xs">{detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ export interface ProjectData {
   address: `0x${string}`;
   title: string;
   researcher: `0x${string}`;
-  fundingGoal: bigint;
+  goalAmount: bigint;
   deadline: bigint;
   totalRaised: bigint;
   status: number;
@@ -19,24 +19,25 @@ export function useProjects() {
   const chainId = useChainId();
   const contracts = getContracts(chainId);
 
-  // Step 1: get all project addresses from factory
-  const { data: projectAddresses, isLoading: loadingAddresses } = useReadContract({
+  // Step 1: paginated fetch — get up to 100 projects starting at offset 0
+  const { data: projectAddresses, isLoading: loadingAddresses, refetch: refetchAddresses } = useReadContract({
     address: contracts.projectFactory,
     abi: ProjectFactoryAbi,
     functionName: "getProjects",
+    args: [0n, 100n],
   });
 
   // Step 2: multicall to read project info from each address
   const projectContracts = (projectAddresses ?? []).flatMap((addr) => [
     { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "title" as const },
     { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "researcher" as const },
-    { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "fundingGoal" as const },
+    { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "goalAmount" as const },
     { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "deadline" as const },
     { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "totalRaised" as const },
     { address: addr as `0x${string}`, abi: ResearchProjectAbi, functionName: "status" as const },
   ]);
 
-  const { data: projectData, isLoading: loadingData } = useReadContracts({
+  const { data: projectData, isLoading: loadingData, refetch: refetchData } = useReadContracts({
     contracts: projectContracts,
     query: { enabled: !!projectAddresses && projectAddresses.length > 0 },
   });
@@ -47,7 +48,7 @@ export function useProjects() {
       const base = i * 6;
       const title = projectData[base]?.result as string | undefined;
       const researcher = projectData[base + 1]?.result as `0x${string}` | undefined;
-      const fundingGoal = projectData[base + 2]?.result as bigint | undefined;
+      const goalAmount = projectData[base + 2]?.result as bigint | undefined;
       const deadline = projectData[base + 3]?.result as bigint | undefined;
       const totalRaised = projectData[base + 4]?.result as bigint | undefined;
       const status = projectData[base + 5]?.result as number | undefined;
@@ -55,7 +56,7 @@ export function useProjects() {
       if (
         title !== undefined &&
         researcher !== undefined &&
-        fundingGoal !== undefined &&
+        goalAmount !== undefined &&
         deadline !== undefined &&
         totalRaised !== undefined &&
         status !== undefined
@@ -64,7 +65,7 @@ export function useProjects() {
           address: projectAddresses[i] as `0x${string}`,
           title,
           researcher,
-          fundingGoal,
+          goalAmount,
           deadline,
           totalRaised,
           status,
@@ -73,9 +74,15 @@ export function useProjects() {
     }
   }
 
+  async function refetch() {
+    await refetchAddresses();
+    await refetchData();
+  }
+
   return {
     projects,
     isLoading: loadingAddresses || loadingData,
     projectCount: projectAddresses?.length ?? 0,
+    refetch,
   };
 }

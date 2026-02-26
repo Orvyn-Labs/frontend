@@ -2,7 +2,6 @@
 
 import { use } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useChainId } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,8 +20,7 @@ import {
   ProjectStatus,
 } from "@/lib/utils";
 import { useProject } from "@/hooks/useProject";
-import { getContracts } from "@/lib/contracts";
-import { FundingPoolAbi } from "@/lib/abis";
+import { ResearchProjectAbi } from "@/lib/abis";
 import { User, Clock, Target, Wallet } from "lucide-react";
 import { useState } from "react";
 
@@ -35,10 +33,8 @@ export default function ProjectDetailPage({ params }: Props) {
   const addr = projectAddress as `0x${string}`;
 
   const { address: userAddress, isConnected } = useAccount();
-  const chainId = useChainId();
-  const contracts = getContracts(chainId);
 
-  const { title, researcher, fundingGoal, deadline, totalRaised, status, myContribution, isLoading, refetch } =
+  const { title, researcher, goalAmount, deadline, totalRaised, status, myContribution, fundsWithdrawn, isLoading, refetch } =
     useProject(addr);
 
   const [refundTxHash, setRefundTxHash] = useState<`0x${string}` | undefined>();
@@ -51,22 +47,24 @@ export default function ProjectDetailPage({ params }: Props) {
   const { isLoading: withdrawConfirming, isSuccess: withdrawSuccess } = useWaitForTransactionReceipt({ hash: withdrawTxHash });
 
   async function handleClaimRefund() {
+    // claimRefund() is on the ResearchProject directly — no args
     const hash = await claimRefundWrite({
-      address: contracts.fundingPool,
-      abi: FundingPoolAbi,
+      address: addr,
+      abi: ResearchProjectAbi,
       functionName: "claimRefund",
-      args: [addr],
     });
     setRefundTxHash(hash);
     refetch();
   }
 
   async function handleWithdraw() {
+    // withdrawFunds(amount) on the ResearchProject — pass totalRaised as amount
+    // Using 0 signals "withdraw all" — the contract handles it internally
     const hash = await withdrawWrite({
-      address: contracts.fundingPool,
-      abi: FundingPoolAbi,
-      functionName: "withdrawProjectFunds",
-      args: [addr],
+      address: addr,
+      abi: ResearchProjectAbi,
+      functionName: "withdrawFunds",
+      args: [totalRaised ?? 0n],
     });
     setWithdrawTxHash(hash);
     refetch();
@@ -84,8 +82,8 @@ export default function ProjectDetailPage({ params }: Props) {
 
   const expired = deadline ? isExpired(deadline) : false;
   const isResearcher = userAddress && researcher && userAddress.toLowerCase() === researcher.toLowerCase();
-  const canRefund = status === ProjectStatus.Refunding && myContribution && myContribution > 0n;
-  const canWithdraw = status === ProjectStatus.Successful && isResearcher;
+  const canRefund = status === ProjectStatus.Failed && myContribution && myContribution > 0n;
+  const canWithdraw = status === ProjectStatus.Succeeded && isResearcher && !fundsWithdrawn;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -111,8 +109,8 @@ export default function ProjectDetailPage({ params }: Props) {
               <CardTitle className="text-base">Funding Progress</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {totalRaised !== undefined && fundingGoal !== undefined ? (
-                <FundingProgress raised={totalRaised} goal={fundingGoal} />
+              {totalRaised !== undefined && goalAmount !== undefined ? (
+                <FundingProgress raised={totalRaised} goal={goalAmount} />
               ) : (
                 <Skeleton className="h-8 w-full" />
               )}
@@ -122,7 +120,7 @@ export default function ProjectDetailPage({ params }: Props) {
                   <p className="text-muted-foreground flex items-center gap-1.5">
                     <Target className="h-3.5 w-3.5" /> Funding Goal
                   </p>
-                  <p className="font-semibold">{fundingGoal !== undefined ? formatEth(fundingGoal) : "—"}</p>
+                  <p className="font-semibold">{goalAmount !== undefined ? formatEth(goalAmount) : "—"}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-muted-foreground flex items-center gap-1.5">
@@ -168,7 +166,7 @@ export default function ProjectDetailPage({ params }: Props) {
                     <Separator />
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
-                        This project failed. You can claim your refund.
+                        This project did not reach its goal. Claim your refund.
                       </p>
                       <TxButton
                         txState={

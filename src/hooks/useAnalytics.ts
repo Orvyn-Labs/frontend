@@ -37,7 +37,7 @@ export function useAnalytics() {
       { address: contracts.stakingVault, abi: StakingVaultAbi, functionName: "totalStaked" },
       { address: contracts.yieldDistributor, abi: YieldDistributorAbi, functionName: "currentEpoch" },
       { address: contracts.yieldDistributor, abi: YieldDistributorAbi, functionName: "rewardIndex" },
-      { address: contracts.projectFactory, abi: ProjectFactoryAbi, functionName: "projectCount" },
+      { address: contracts.projectFactory, abi: ProjectFactoryAbi, functionName: "totalProjects" },
     ],
   });
 

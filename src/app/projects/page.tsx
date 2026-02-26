@@ -3,9 +3,12 @@
 import { useProjects } from "@/hooks/useProjects";
 import { ProjectGrid } from "@/components/projects/ProjectGrid";
 import { NetworkBadge } from "@/components/web3/NetworkBadge";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
+import { useAccount } from "wagmi";
 
 export default function ProjectsPage() {
-  const { projects, isLoading, projectCount } = useProjects();
+  const { projects, isLoading, projectCount, refetch } = useProjects();
+  const { isConnected } = useAccount();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -20,6 +23,10 @@ export default function ProjectsPage() {
             {isLoading ? "Loading..." : `${projectCount} project${projectCount !== 1 ? "s" : ""} on-chain`}
           </p>
         </div>
+
+        {isConnected && (
+          <CreateProjectDialog onCreated={refetch} />
+        )}
       </div>
 
       {/* Grid */}

@@ -31,7 +31,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </CardHeader>
 
         <CardContent className="flex-1 space-y-4">
-          <FundingProgress raised={project.totalRaised} goal={project.fundingGoal} />
+          <FundingProgress raised={project.totalRaised} goal={project.goalAmount} />
 
           <div className="space-y-1.5 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">

@@ -2,14 +2,10 @@
 
 import { useState } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useChainId } from "wagmi";
 import { parseEther } from "viem";
-import { getContracts } from "@/lib/contracts";
-import { FundingPoolAbi } from "@/lib/abis";
+import { ResearchProjectAbi } from "@/lib/abis";
 
 export function useDonate(projectAddress: `0x${string}`) {
-  const chainId = useChainId();
-  const contracts = getContracts(chainId);
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
   const { writeContractAsync, isPending: isWritePending, error: writeError } = useWriteContract();
@@ -18,13 +14,13 @@ export function useDonate(projectAddress: `0x${string}`) {
     hash: txHash,
   });
 
+  // donate() is payable on the ResearchProject itself — no args, just value
   async function donate(ethAmount: string) {
     try {
       const hash = await writeContractAsync({
-        address: contracts.fundingPool,
-        abi: FundingPoolAbi,
+        address: projectAddress,
+        abi: ResearchProjectAbi,
         functionName: "donate",
-        args: [projectAddress],
         value: parseEther(ethAmount),
       });
       setTxHash(hash);

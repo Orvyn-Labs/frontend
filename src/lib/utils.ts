@@ -49,20 +49,20 @@ export function isExpired(deadline: bigint | number): boolean {
   return Date.now() / 1000 > Number(deadline);
 }
 
-// Project status enum (matches Solidity)
+// Project status enum (matches Solidity: Active=0, Succeeded=1, Failed=2, Cancelled=3)
 export enum ProjectStatus {
   Active = 0,
-  Successful = 1,
+  Succeeded = 1,
   Failed = 2,
-  Refunding = 3,
+  Cancelled = 3,
 }
 
 export function statusLabel(status: number): string {
   switch (status) {
     case ProjectStatus.Active: return "Active";
-    case ProjectStatus.Successful: return "Successful";
+    case ProjectStatus.Succeeded: return "Succeeded";
     case ProjectStatus.Failed: return "Failed";
-    case ProjectStatus.Refunding: return "Refunding";
+    case ProjectStatus.Cancelled: return "Cancelled";
     default: return "Unknown";
   }
 }
@@ -70,9 +70,9 @@ export function statusLabel(status: number): string {
 export function statusColor(status: number): string {
   switch (status) {
     case ProjectStatus.Active: return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-    case ProjectStatus.Successful: return "bg-green-500/20 text-green-400 border-green-500/30";
+    case ProjectStatus.Succeeded: return "bg-green-500/20 text-green-400 border-green-500/30";
     case ProjectStatus.Failed: return "bg-red-500/20 text-red-400 border-red-500/30";
-    case ProjectStatus.Refunding: return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+    case ProjectStatus.Cancelled: return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
     default: return "bg-gray-500/20 text-gray-400 border-gray-500/30";
   }
 }

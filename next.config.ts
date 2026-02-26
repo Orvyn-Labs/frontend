@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // WalletConnect's ethereum-provider uses browser-only APIs (indexedDB, WebSocket)
+  // at module load time. Exclude it from the SSR bundle so it only runs client-side.
+  serverExternalPackages: [
+    "@walletconnect/ethereum-provider",
+    "@walletconnect/universal-provider",
+    "@walletconnect/core",
+    "@walletconnect/sign-client",
+  ],
 };
 
 export default nextConfig;

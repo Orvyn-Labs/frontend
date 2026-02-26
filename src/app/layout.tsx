@@ -37,13 +37,14 @@ export default async function RootLayout({
     <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        suppressHydrationWarning
       >
         <Providers initialState={initialState}>
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
         </Providers>
-      </body suppressHydrationWarning>
+      </body>
     </html>
   );
 }

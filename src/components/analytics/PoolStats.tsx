@@ -7,7 +7,7 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { Banknote, BarChart3, Coins, FlaskConical } from "lucide-react";
 
 export function PoolStats() {
-  const { totalDonations, totalYieldDistributed, totalPool, totalStaked, projectCount, currentEpoch, isLoading } =
+  const { totalDonations, totalYieldDistributed, totalStaked, projectCount, isLoading } =
     useAnalytics();
 
   const stats = [

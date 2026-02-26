@@ -15,7 +15,7 @@ interface StakeFormProps {
 
 export function StakeForm({ dktBalance, dktAllowance, onSuccess }: StakeFormProps) {
   const [amount, setAmount] = useState("");
-  const { approveDkt, stake, txState, currentAction, isSuccess } = useStakeWrite();
+  const { approveDkt, stake, txState, isSuccess } = useStakeWrite();
 
   const amountWei = amount ? parseUnits(amount, 18) : 0n;
   const needsApproval = dktAllowance !== undefined && amountWei > dktAllowance;

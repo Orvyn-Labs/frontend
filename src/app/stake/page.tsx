@@ -20,7 +20,7 @@ function ClaimYieldSection({
   pendingYield: bigint | undefined;
   onSuccess: () => void;
 }) {
-  const { claimYield, txState, currentAction } = useStakeWrite();
+  const { claimYield, txState } = useStakeWrite();
 
   return (
     <Card>

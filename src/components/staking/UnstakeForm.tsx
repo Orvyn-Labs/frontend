@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TxButton } from "@/components/web3/TxButton";
@@ -17,18 +17,27 @@ interface UnstakeFormProps {
 
 export function UnstakeForm({ stakedBalance, isLocked, lockExpiry, onSuccess }: UnstakeFormProps) {
   const [amount, setAmount] = useState("");
-  const { unstake, txState, isSuccess } = useStakeWrite();
+  const { unstake, reset, txState, isSuccess, currentAction } = useStakeWrite();
 
   const amountWei = amount ? parseUnits(amount, 18) : 0n;
   const hasBalance = stakedBalance !== undefined && amountWei <= stakedBalance && amountWei > 0n;
   const isActionPending = txState === "pending" || txState === "confirming";
 
+  useEffect(() => {
+    if (isSuccess && currentAction === "unstake") {
+      onSuccess?.();
+      const t = setTimeout(() => {
+        setAmount("");
+        reset();
+      }, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [isSuccess, currentAction]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleUnstake() {
     if (!amount || isLocked || !hasBalance) return;
     try {
       await unstake(amount);
-      setAmount("");
-      onSuccess?.();
     } catch {
       // surfaced via txState
     }
@@ -69,7 +78,7 @@ export function UnstakeForm({ stakedBalance, isLocked, lockExpiry, onSuccess }: 
       <TxButton
         txState={txState as "idle" | "pending" | "confirming" | "success" | "error"}
         idleLabel="Unstake DKT"
-        disabled={!amount || isLocked || !hasBalance || isSuccess}
+        disabled={!amount || isLocked || !hasBalance || isActionPending}
         onClick={handleUnstake}
         variant="outline"
         className="w-full"

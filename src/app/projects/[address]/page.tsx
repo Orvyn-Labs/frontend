@@ -21,7 +21,7 @@ import {
 } from "@/lib/utils";
 import { useProject } from "@/hooks/useProject";
 import { ResearchProjectAbi } from "@/lib/abis";
-import { User, Clock, Target, Wallet, ArrowLeft } from "lucide-react";
+import { User, Clock, Target, Wallet, ArrowLeft, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
@@ -36,7 +36,7 @@ export default function ProjectDetailPage({ params }: Props) {
 
   const { address: userAddress, isConnected } = useAccount();
 
-  const { title, researcher, goalAmount, deadline, totalRaised, status, myContribution, fundsWithdrawn, isLoading, refetch } =
+  const { title, researcher, goalAmount, deadline, totalRaised, status, myContribution, fundsWithdrawn, poolBalance, isLoading, refetch } =
     useProject(addr);
 
   const [refundTxHash, setRefundTxHash] = useState<`0x${string}` | undefined>();
@@ -142,10 +142,19 @@ export default function ProjectDetailPage({ params }: Props) {
                   </div>
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-xs uppercase font-black tracking-widest flex items-center gap-2">
-                      <Wallet className="h-3.5 w-3.5 text-green-400" /> Raised
+                      <Wallet className="h-3.5 w-3.5 text-green-400" /> Direct Donations
                     </p>
                     <p className="text-2xl font-black text-blue-400">{totalRaised !== undefined ? formatEth(totalRaised) : "—"}</p>
                   </div>
+                  {(poolBalance !== undefined && poolBalance > 0n) && (
+                    <div className="space-y-2 col-span-2">
+                      <p className="text-muted-foreground text-xs uppercase font-black tracking-widest flex items-center gap-2">
+                        <TrendingUp className="h-3.5 w-3.5 text-green-400" /> Yield Donations (FundingPool)
+                      </p>
+                      <p className="text-xl font-black text-green-400">{formatEth(poolBalance)}</p>
+                      <p className="text-xs text-white/40">ETH routed from staker yield splits</p>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-xs uppercase font-black tracking-widest flex items-center gap-2">
                       <User className="h-3.5 w-3.5 text-violet-400" /> Researcher

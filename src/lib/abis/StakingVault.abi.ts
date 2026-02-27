@@ -8,11 +8,11 @@ export const StakingVaultAbi = [
   { type: "function", name: "totalStaked", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "stakedBalance", inputs: [{ name: "user", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "lockExpiry", inputs: [{ name: "user", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "stake", inputs: [{ name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "stake", inputs: [{ name: "amount", type: "uint256" }, { name: "targetProject", type: "address" }, { name: "donateBps", type: "uint16" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "unstake", inputs: [{ name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "initialize", inputs: [{ name: "admin", type: "address" }, { name: "dktTokenAddr", type: "address" }, { name: "yieldDistributorAddr", type: "address" }, { name: "initialLockPeriod", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "setLockPeriod", inputs: [{ name: "newPeriod", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "hasRole", inputs: [{ name: "role", type: "bytes32" }, { name: "account", type: "address" }], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
-  { type: "event", name: "Staked", inputs: [{ name: "staker", type: "address", indexed: true }, { name: "amount", type: "uint256", indexed: false }, { name: "newBalance", type: "uint256", indexed: false }, { name: "lockExpiry", type: "uint256", indexed: false }, { name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
+  { type: "event", name: "Staked", inputs: [{ name: "staker", type: "address", indexed: true }, { name: "amount", type: "uint256", indexed: false }, { name: "newBalance", type: "uint256", indexed: false }, { name: "lockExpiry", type: "uint256", indexed: false }, { name: "targetProject", type: "address", indexed: true }, { name: "donateBps", type: "uint16", indexed: false }, { name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
   { type: "event", name: "Unstaked", inputs: [{ name: "staker", type: "address", indexed: true }, { name: "amount", type: "uint256", indexed: false }, { name: "remainingBalance", type: "uint256", indexed: false }, { name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
 ] as const;

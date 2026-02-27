@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +13,6 @@ import { UnstakeForm } from "@/components/staking/UnstakeForm";
 import { useStaking } from "@/hooks/useStaking";
 import { useStakeWrite } from "@/hooks/useStakeWrite";
 import { formatEth } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 
 function ClaimYieldSection({
@@ -22,7 +22,15 @@ function ClaimYieldSection({
   pendingYield: bigint | undefined;
   onSuccess: () => void;
 }) {
-  const { claimYield, txState } = useStakeWrite();
+  const { claimYield, reset, txState, isSuccess, currentAction } = useStakeWrite();
+
+  useEffect(() => {
+    if (isSuccess && currentAction === "claimYield") {
+      onSuccess();
+      const t = setTimeout(reset, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [isSuccess, currentAction]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Card className="glass-morphism h-full">
@@ -44,11 +52,10 @@ function ClaimYieldSection({
           txState={txState as "idle" | "pending" | "confirming" | "success" | "error"}
           idleLabel="Claim Yield"
           confirmingLabel="Claiming yield..."
-          disabled={!pendingYield || pendingYield === 0n}
+          disabled={!pendingYield || pendingYield === 0n || txState === "pending" || txState === "confirming"}
           onClick={async () => {
             try {
               await claimYield();
-              onSuccess();
             } catch {}
           }}
           className="w-full glow"

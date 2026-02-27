@@ -12,7 +12,7 @@ import { StakeForm } from "@/components/staking/StakeForm";
 import { UnstakeForm } from "@/components/staking/UnstakeForm";
 import { useStaking } from "@/hooks/useStaking";
 import { useStakeWrite } from "@/hooks/useStakeWrite";
-import { formatEth } from "@/lib/utils";
+import { formatDkt } from "@/lib/utils";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
 
 function ClaimYieldSection({
@@ -41,12 +41,12 @@ function ClaimYieldSection({
         <div className="flex items-center justify-between text-sm bg-green-500/10 p-3 rounded-xl border border-green-500/20">
           <span className="text-muted-foreground">Pending yield:</span>
           <span className="font-bold text-lg text-green-400">
-            {pendingYield !== undefined ? formatEth(pendingYield) : "—"}
+            {pendingYield !== undefined ? formatDkt(pendingYield) : "—"}
           </span>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Simulated ETH yield is distributed via the global reward index (O(1) algorithm).
-          Claiming transfers your accumulated ETH to your wallet.
+          Simulated DKT yield is distributed via the global reward index (O(1) algorithm).
+          Claiming transfers your accumulated DKT to your wallet.
         </p>
         <TxButton
           txState={txState as "idle" | "pending" | "confirming" | "success" | "error"}
@@ -89,7 +89,7 @@ export default function StakePage() {
           <div>
             <h1 className="text-3xl font-black tracking-tight">Stake DKT</h1>
             <p className="text-muted-foreground text-sm">
-              Stake Dikti Tokens to earn simulated ETH yield.
+              Stake Dikti Tokens to earn simulated DKT yield.
             </p>
           </div>
           <NetworkBadge className="ml-auto" />

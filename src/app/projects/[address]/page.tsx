@@ -13,7 +13,7 @@ import { NetworkBadge } from "@/components/web3/NetworkBadge";
 import {
   shortenAddress,
   formatDeadline,
-  formatEth,
+  formatDkt,
   statusLabel,
   statusColor,
   isExpired,
@@ -59,11 +59,13 @@ export default function ProjectDetailPage({ params }: Props) {
   }
 
   async function handleWithdraw() {
+    // Pass poolBalance — the actual DKT allocation for this project in FundingPool.
+    // This includes both direct donations forwarded on finalize() and yield routed by stakers.
     const hash = await withdrawWrite({
       address: addr,
       abi: ResearchProjectAbi,
       functionName: "withdrawFunds",
-      args: [totalRaised ?? 0n],
+      args: [poolBalance ?? 0n],
     });
     setWithdrawTxHash(hash);
     refetch();
@@ -138,21 +140,21 @@ export default function ProjectDetailPage({ params }: Props) {
                     <p className="text-muted-foreground text-xs uppercase font-black tracking-widest flex items-center gap-2">
                       <Target className="h-3.5 w-3.5 text-blue-400" /> Goal
                     </p>
-                    <p className="text-2xl font-black">{goalAmount !== undefined ? formatEth(goalAmount) : "—"}</p>
+                    <p className="text-2xl font-black">{goalAmount !== undefined ? formatDkt(goalAmount) : "—"}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-xs uppercase font-black tracking-widest flex items-center gap-2">
                       <Wallet className="h-3.5 w-3.5 text-green-400" /> Direct Donations
                     </p>
-                    <p className="text-2xl font-black text-blue-400">{totalRaised !== undefined ? formatEth(totalRaised) : "—"}</p>
+                    <p className="text-2xl font-black text-blue-400">{totalRaised !== undefined ? formatDkt(totalRaised) : "—"}</p>
                   </div>
                   {(poolBalance !== undefined && poolBalance > 0n) && (
                     <div className="space-y-2 col-span-2">
                       <p className="text-muted-foreground text-xs uppercase font-black tracking-widest flex items-center gap-2">
                         <TrendingUp className="h-3.5 w-3.5 text-green-400" /> Yield Donations (FundingPool)
                       </p>
-                      <p className="text-xl font-black text-green-400">{formatEth(poolBalance)}</p>
-                      <p className="text-xs text-white/40">ETH routed from staker yield splits</p>
+                      <p className="text-xl font-black text-green-400">{formatDkt(poolBalance)}</p>
+                      <p className="text-xs text-white/40">DKT routed from staker yield splits</p>
                     </div>
                   )}
                   <div className="space-y-2">
@@ -186,14 +188,14 @@ export default function ProjectDetailPage({ params }: Props) {
                   {myContribution !== undefined && myContribution > 0n && (
                     <div className="flex items-center justify-between text-sm bg-white/5 p-4 rounded-2xl border border-white/5">
                       <span className="text-muted-foreground">Your contribution:</span>
-                      <span className="font-black text-blue-400">{formatEth(myContribution)}</span>
+                      <span className="font-black text-blue-400">{formatDkt(myContribution)}</span>
                     </div>
                   )}
 
                   {canRefund && (
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        This project did not reach its goal. As a donor, you are entitled to a full refund of your ETH.
+                        This project did not reach its goal. As a donor, you are entitled to a full refund of your DKT.
                       </p>
                       <TxButton
                         txState={

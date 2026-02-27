@@ -9,7 +9,7 @@ const FEATURES = [
     icon: FlaskConical,
     title: "Fund Research",
     description:
-      "Direct ETH contributions to research. Funds are securely managed via FundingPool and only released when goals are achieved.",
+      "Direct DKT contributions to research. Funds are securely managed via FundingPool and only released when goals are achieved.",
   },
   {
     icon: Coins,

@@ -30,7 +30,7 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
 
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [goalEth, setGoalEth] = useState("");
+  const [goalDkt, setGoalDkt] = useState("");
   const [durationDays, setDurationDays] = useState("");
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
@@ -46,13 +46,13 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
 
   const isFormValid =
     title.trim().length > 0 &&
-    goalEth.trim().length > 0 && parseFloat(goalEth) > 0 &&
+    goalDkt.trim().length > 0 && parseFloat(goalDkt) > 0 &&
     durationDays.trim().length > 0 && parseInt(durationDays) > 0;
 
   async function handleCreate() {
     if (!isFormValid) return;
     try {
-      const goalWei = parseEther(goalEth);
+      const goalWei = parseEther(goalDkt);
       const durationSeconds = BigInt(Math.floor(parseFloat(durationDays) * 24 * 60 * 60));
 
       const hash = await writeContractAsync({
@@ -71,7 +71,7 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
     // Reset form when dialog closes, unless tx in progress
     if (!val && txState !== "pending" && txState !== "confirming") {
       setTitle("");
-      setGoalEth("");
+      setGoalDkt("");
       setDurationDays("");
       setTxHash(undefined);
     }
@@ -84,7 +84,7 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
   function handleSuccessClose() {
     setOpen(false);
     setTitle("");
-    setGoalEth("");
+    setGoalDkt("");
     setDurationDays("");
     setTxHash(undefined);
     onCreated?.();
@@ -135,15 +135,15 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="goal-eth">Funding Goal (ETH)</Label>
+                <Label htmlFor="goal-dkt">Funding Goal (DKT)</Label>
                 <Input
-                  id="goal-eth"
+                  id="goal-dkt"
                   type="number"
-                  placeholder="0.1"
+                  placeholder="1000"
                   min="0"
-                  step="0.001"
-                  value={goalEth}
-                  onChange={(e) => setGoalEth(e.target.value)}
+                  step="1"
+                  value={goalDkt}
+                  onChange={(e) => setGoalDkt(e.target.value)}
                   disabled={txState === "pending" || txState === "confirming"}
                 />
               </div>

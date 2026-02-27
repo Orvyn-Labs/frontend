@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import { fundingPercent, formatEth } from "@/lib/utils";
+import { fundingPercent, formatDkt } from "@/lib/utils";
 
 interface FundingProgressProps {
   raised: bigint;
@@ -15,9 +15,9 @@ export function FundingProgress({ raised, goal, showAmounts = true }: FundingPro
       <Progress value={pct} className="h-2" />
       {showAmounts && (
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{formatEth(raised)} raised</span>
+          <span>{formatDkt(raised)} raised</span>
           <span className="font-medium text-foreground">{pct.toFixed(1)}%</span>
-          <span>goal: {formatEth(goal)}</span>
+          <span>goal: {formatDkt(goal)}</span>
         </div>
       )}
     </div>

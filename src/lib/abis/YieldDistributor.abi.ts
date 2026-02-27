@@ -1,6 +1,5 @@
 export const YieldDistributorAbi = [
   { type: "constructor", inputs: [], stateMutability: "nonpayable" },
-  { type: "receive", stateMutability: "payable" },
   { type: "function", name: "DEFAULT_ADMIN_ROLE", inputs: [], outputs: [{ name: "", type: "bytes32" }], stateMutability: "view" },
   { type: "function", name: "YIELD_ADMIN_ROLE", inputs: [], outputs: [{ name: "", type: "bytes32" }], stateMutability: "view" },
   { type: "function", name: "EPOCH_ADMIN_ROLE", inputs: [], outputs: [{ name: "", type: "bytes32" }], stateMutability: "view" },
@@ -9,6 +8,14 @@ export const YieldDistributorAbi = [
   { type: "function", name: "MIN_EPOCH_DURATION", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "rewardIndex", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "currentEpoch", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "yieldPool", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "totalStaked", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "yieldRateWAD", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "stakingVault", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
+  { type: "function", name: "getFundingPool", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
+  { type: "function", name: "getDkt", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
+  { type: "function", name: "userStakedBalance", inputs: [{ name: "user", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "userIndexSnapshot", inputs: [{ name: "user", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "pendingYield", inputs: [{ name: "user", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   {
     type: "function",
@@ -17,17 +24,19 @@ export const YieldDistributorAbi = [
     outputs: [{ name: "", type: "tuple", components: [{ name: "targetProject", type: "address" }, { name: "donateBps", type: "uint16" }] }],
     stateMutability: "view",
   },
+  { type: "function", name: "epochInfo", inputs: [{ name: "epoch", type: "uint256" }], outputs: [{ name: "", type: "tuple", components: [{ name: "totalYield", type: "uint256" }, { name: "totalStaked", type: "uint256" }, { name: "yieldRateWAD", type: "uint256" }, { name: "blockNumber", type: "uint256" }, { name: "timestamp", type: "uint256" }] }], stateMutability: "view" },
+  // initialize now takes _dkt as 3rd arg
+  { type: "function", name: "initialize", inputs: [{ name: "admin", type: "address" }, { name: "initialRateWAD", type: "uint256" }, { name: "_dkt", type: "address" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "claimYield", inputs: [], outputs: [{ name: "claimed", type: "uint256" }], stateMutability: "nonpayable" },
-  { type: "function", name: "fundYieldPool", inputs: [], outputs: [], stateMutability: "payable" },
+  // fundYieldPool(uint256) — NOT payable; pulls DKT via transferFrom. Caller must approve first.
+  { type: "function", name: "fundYieldPool", inputs: [{ name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "withdrawUnclaimedYield", inputs: [{ name: "to", type: "address" }, { name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "advanceEpoch", inputs: [], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "setYieldRate", inputs: [{ name: "newRateWAD", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "setStakingVault", inputs: [{ name: "vault", type: "address" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "setFundingPool", inputs: [{ name: "fundingPool", type: "address" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "getFundingPool", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
   { type: "function", name: "notifyStake", inputs: [{ name: "user", type: "address" }, { name: "amount", type: "uint256" }, { name: "targetProject", type: "address" }, { name: "donateBps", type: "uint16" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "notifyUnstake", inputs: [{ name: "user", type: "address" }, { name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "initialize", inputs: [{ name: "admin", type: "address" }, { name: "initialRateWAD", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
-  { type: "function", name: "epochInfo", inputs: [{ name: "epoch", type: "uint256" }], outputs: [{ name: "", type: "tuple", components: [{ name: "totalYield", type: "uint256" }, { name: "totalStaked", type: "uint256" }, { name: "yieldRateWAD", type: "uint256" }, { name: "blockNumber", type: "uint256" }, { name: "timestamp", type: "uint256" }] }], stateMutability: "view" },
   { type: "function", name: "hasRole", inputs: [{ name: "role", type: "bytes32" }, { name: "account", type: "address" }], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
   {
     type: "event",
@@ -47,4 +56,6 @@ export const YieldDistributorAbi = [
   { type: "event", name: "YieldPoolFunded", inputs: [{ name: "funder", type: "address", indexed: true }, { name: "amount", type: "uint256", indexed: false }], anonymous: false },
   { type: "event", name: "FundingPoolSet", inputs: [{ name: "fundingPool", type: "address", indexed: true }], anonymous: false },
   { type: "event", name: "StakingVaultSet", inputs: [{ name: "vault", type: "address", indexed: true }], anonymous: false },
+  { type: "event", name: "RewardIndexUpdated", inputs: [{ name: "newIndex", type: "uint256", indexed: false }, { name: "timestamp", type: "uint256", indexed: false }], anonymous: false },
+  { type: "event", name: "YieldRateUpdated", inputs: [{ name: "oldRate", type: "uint256", indexed: false }, { name: "newRate", type: "uint256", indexed: false }], anonymous: false },
 ] as const;

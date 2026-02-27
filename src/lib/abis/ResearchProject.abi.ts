@@ -1,6 +1,5 @@
 export const ResearchProjectAbi = [
   { type: "constructor", inputs: [], stateMutability: "nonpayable" },
-  { type: "receive", stateMutability: "payable" },
   // ── View ──
   { type: "function", name: "researcher", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
   { type: "function", name: "title", inputs: [], outputs: [{ name: "", type: "string" }], stateMutability: "view" },
@@ -11,6 +10,7 @@ export const ResearchProjectAbi = [
   { type: "function", name: "projectId", inputs: [], outputs: [{ name: "", type: "bytes32" }], stateMutability: "view" },
   { type: "function", name: "fundsWithdrawn", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
   { type: "function", name: "fundingPool", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
+  { type: "function", name: "dkt", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
   { type: "function", name: "donations", inputs: [{ name: "donor", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "isActive", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
   { type: "function", name: "timeRemaining", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
@@ -29,9 +29,10 @@ export const ResearchProjectAbi = [
     stateMutability: "view",
   },
   // ── Write ──
-  { type: "function", name: "initialize", inputs: [{ name: "_researcher", type: "address" }, { name: "_fundingPool", type: "address" }, { name: "_title", type: "string" }, { name: "_goalAmount", type: "uint256" }, { name: "_duration", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
-  // donate() is payable on the PROJECT, not FundingPool
-  { type: "function", name: "donate", inputs: [], outputs: [], stateMutability: "payable" },
+  // initialize now takes _dkt as 3rd arg (before _title)
+  { type: "function", name: "initialize", inputs: [{ name: "_researcher", type: "address" }, { name: "_fundingPool", type: "address" }, { name: "_dkt", type: "address" }, { name: "_title", type: "string" }, { name: "_goalAmount", type: "uint256" }, { name: "_duration", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  // donate(uint256) — ERC-20 transferFrom, NOT payable. Caller must approve first.
+  { type: "function", name: "donate", inputs: [{ name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "finalize", inputs: [], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "claimRefund", inputs: [], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "withdrawFunds", inputs: [{ name: "amount", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
@@ -42,4 +43,5 @@ export const ResearchProjectAbi = [
   { type: "event", name: "ProjectFinalized", inputs: [{ name: "status", type: "uint8", indexed: false }, { name: "totalRaised", type: "uint256", indexed: false }, { name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
   { type: "event", name: "FundsWithdrawn", inputs: [{ name: "researcher", type: "address", indexed: true }, { name: "amount", type: "uint256", indexed: false }, { name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
   { type: "event", name: "RefundClaimed", inputs: [{ name: "donor", type: "address", indexed: true }, { name: "amount", type: "uint256", indexed: false }, { name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
+  { type: "event", name: "ProjectCancelled", inputs: [{ name: "blockNumber", type: "uint256", indexed: false }], anonymous: false },
 ] as const;

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { formatEther, formatUnits } from "viem";
+import { formatUnits } from "viem";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,21 +12,18 @@ export function shortenAddress(address: string, chars = 4): string {
   return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`;
 }
 
-// Format ETH with configurable decimal places
-export function formatEth(value: bigint, decimals = 4): string {
-  const formatted = formatEther(value);
-  const num = parseFloat(formatted);
-  if (num === 0) return "0 ETH";
-  if (num < 0.0001) return "< 0.0001 ETH";
-  return `${num.toFixed(decimals)} ETH`;
-}
-
-// Format DKT token amount (18 decimals)
+// Format DKT token amount (18 decimals) — all protocol values are in DKT
 export function formatDkt(value: bigint, decimals = 2): string {
   const formatted = formatUnits(value, 18);
   const num = parseFloat(formatted);
+  if (num === 0) return "0 DKT";
+  if (num < 0.000001) return `${(num * 1e9).toFixed(2)} nanoDKT`;
+  if (num < 0.001) return `${(num * 1e6).toFixed(2)} µDKT`;
   return `${num.toLocaleString(undefined, { maximumFractionDigits: decimals })} DKT`;
 }
+
+// Alias kept for any legacy call sites — always formats as DKT now
+export const formatEth = formatDkt;
 
 // Format a funding progress as percentage
 export function fundingPercent(raised: bigint, goal: bigint): number {

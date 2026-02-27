@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDkt, formatEth, formatDeadline } from "@/lib/utils";
+import { formatDkt, formatDeadline } from "@/lib/utils";
 import type { useStaking } from "@/hooks/useStaking";
 import { Coins, Lock, TrendingUp, Users, GitBranch } from "lucide-react";
 
@@ -40,8 +40,8 @@ export function StakingStats({ data }: { data: StakingData }) {
     {
       icon: TrendingUp,
       label: "Pending Yield",
-      value: pendingYield !== undefined ? formatEth(pendingYield) : "—",
-      sub: "Claimable ETH",
+      value: pendingYield !== undefined ? formatDkt(pendingYield) : "—",
+      sub: "Claimable DKT",
       color: "text-green-400",
     },
     {

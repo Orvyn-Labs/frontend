@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,9 +16,40 @@ interface DonateFormProps {
 }
 
 export function DonateForm({ projectAddress, status, onSuccess }: DonateFormProps) {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [amount, setAmount] = useState("");
-  const { donate, txState } = useDonate(projectAddress);
+
+  const {
+    approveDkt,
+    donate,
+    reset,
+    txState,
+    currentAction,
+    isSuccess,
+    needsApprove,
+    refetchAllowance,
+    pendingDonateRef,
+  } = useDonate(projectAddress, address);
+
+  // After approve confirms → auto-fire donate
+  useEffect(() => {
+    if (isSuccess && currentAction === "approve" && pendingDonateRef.current) {
+      const dktAmount = pendingDonateRef.current;
+      refetchAllowance().then(() => {
+        donate(dktAmount).catch(() => {});
+      });
+    }
+  }, [isSuccess, currentAction]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // After donate confirms → notify parent and reset
+  useEffect(() => {
+    if (isSuccess && currentAction === "donate") {
+      onSuccess?.();
+      setAmount("");
+      const t = setTimeout(reset, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [isSuccess, currentAction]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isConnected) {
     return (
@@ -37,37 +68,55 @@ export function DonateForm({ projectAddress, status, onSuccess }: DonateFormProp
     );
   }
 
-  async function handleDonate() {
-    if (!amount || parseFloat(amount) <= 0) return;
+  const isValidAmount = !!amount && parseFloat(amount) > 0;
+  const requiresApprove = isValidAmount && needsApprove(amount);
+
+  // Label for the button — show "Approve" when approval is needed or in-progress
+  const showApproveLabel = currentAction === "approve" || (isValidAmount && requiresApprove);
+  const idleLabel = showApproveLabel ? "Approve DKT" : "Donate DKT";
+  const confirmingLabel = currentAction === "approve" ? "Approving..." : "Donating...";
+
+  async function handleClick() {
+    if (!isValidAmount) return;
     try {
-      await donate(amount);
-      setAmount("");
-      onSuccess?.();
+      if (needsApprove(amount)) {
+        await approveDkt(amount);
+      } else {
+        await donate(amount);
+      }
     } catch {
-      // error is surfaced via txState
+      // errors surfaced via txState
     }
   }
 
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="eth-amount">Amount (ETH)</Label>
+        <Label htmlFor="dkt-amount">Amount (DKT)</Label>
         <Input
-          id="eth-amount"
+          id="dkt-amount"
           type="number"
-          placeholder="0.01"
+          placeholder="100"
           min="0"
-          step="0.001"
+          step="1"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           disabled={txState === "pending" || txState === "confirming"}
         />
+        {isValidAmount && (
+          <p className="text-xs text-muted-foreground">
+            {requiresApprove
+              ? "Step 1 of 2: Approve DKT spending, then donate."
+              : "Allowance sufficient — ready to donate."}
+          </p>
+        )}
       </div>
       <TxButton
-        txState={txState as "idle" | "pending" | "confirming" | "success" | "error"}
-        idleLabel="Donate ETH"
-        disabled={!amount || parseFloat(amount) <= 0}
-        onClick={handleDonate}
+        txState={txState}
+        idleLabel={idleLabel}
+        confirmingLabel={confirmingLabel}
+        disabled={!isValidAmount || txState === "pending" || txState === "confirming"}
+        onClick={handleClick}
         className="w-full"
       />
     </div>

@@ -4,16 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDkt } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { Banknote, BarChart3, Coins, FlaskConical } from "lucide-react";
+import { BarChart3, Coins, FlaskConical, TrendingUp } from "lucide-react";
 
 export function PoolStats() {
-  const { totalDonations, totalYieldDistributed, totalStaked, projectCount, isLoading } =
+  const { totalStaked, totalYieldDistributed, totalPool, projectCount, isLoading } =
     useAnalytics();
 
   const stats = [
-    { icon: Banknote, label: "Total Donations", value: totalDonations, format: formatDkt, color: "text-blue-400" },
-    { icon: BarChart3, label: "Yield Distributed", value: totalYieldDistributed, format: formatDkt, color: "text-green-400" },
     { icon: Coins, label: "Total Staked", value: totalStaked, format: formatDkt, color: "text-violet-400" },
+    { icon: TrendingUp, label: "Yield Distributed", value: totalYieldDistributed, format: formatDkt, color: "text-green-400" },
+    { icon: BarChart3, label: "Yield Pool", value: totalPool, format: formatDkt, color: "text-blue-400" },
     { icon: FlaskConical, label: "Projects Created", value: projectCount !== undefined ? BigInt(projectCount) : undefined, format: (v: bigint) => v.toString(), color: "text-amber-400" },
   ];
 

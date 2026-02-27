@@ -1,66 +1,172 @@
 "use client";
 
-import { useReadContracts } from "wagmi";
-import { useAccount, useChainId } from "wagmi";
+import { useReadContracts, useReadContract } from "wagmi";
+import { useAccount } from "wagmi";
 import { ResearchProjectAbi, FundingPoolAbi } from "@/lib/abis";
-import { getContracts } from "@/lib/contracts";
+
+// Mirrors the Solidity MilestoneStatus enum
+export enum MilestoneStatus {
+  Pending  = 0,
+  Voting   = 1,
+  Approved = 2,
+  Rejected = 3,
+  Skipped  = 4,
+}
+
+// Mirrors the Solidity ProjectStatus enum
+export enum ProjectStatus {
+  Active    = 0,
+  Completed = 1,
+  Cancelled = 2,
+}
+
+export interface Milestone {
+  title:    string;
+  goal:     bigint;
+  deadline: bigint;
+  raised:   bigint;
+  votesYes: bigint;
+  votesNo:  bigint;
+  proofUri: string;
+  status:   MilestoneStatus;
+}
 
 export function useProject(projectAddress: `0x${string}`) {
   const { address } = useAccount();
-  const chainId = useChainId();
-  const contracts = getContracts(chainId);
-
   const zero = "0x0000000000000000000000000000000000000000" as const;
 
-  // Build flat contracts array — wagmi strict typing works best with a stable shape
-  // Indices: 0=title 1=researcher 2=goalAmount 3=deadline 4=totalRaised 5=status
-  //          6=fundingPool 7=donations(caller)
-  const { data, isLoading, refetch } = useReadContracts({
+  // Step 1 — read top-level project state
+  const { data, isLoading: loadingMeta, refetch: refetchMeta } = useReadContracts({
     contracts: [
       { address: projectAddress, abi: ResearchProjectAbi, functionName: "title" as const },
       { address: projectAddress, abi: ResearchProjectAbi, functionName: "researcher" as const },
-      { address: projectAddress, abi: ResearchProjectAbi, functionName: "goalAmount" as const },
-      { address: projectAddress, abi: ResearchProjectAbi, functionName: "deadline" as const },
+      { address: projectAddress, abi: ResearchProjectAbi, functionName: "projectStatus" as const },
+      { address: projectAddress, abi: ResearchProjectAbi, functionName: "currentMilestoneIndex" as const },
+      { address: projectAddress, abi: ResearchProjectAbi, functionName: "milestoneCount" as const },
       { address: projectAddress, abi: ResearchProjectAbi, functionName: "totalRaised" as const },
-      { address: projectAddress, abi: ResearchProjectAbi, functionName: "status" as const },
       { address: projectAddress, abi: ResearchProjectAbi, functionName: "fundingPool" as const },
-      {
-        address: projectAddress,
-        abi: ResearchProjectAbi,
-        functionName: "donations" as const,
-        args: [(address ?? zero) as `0x${string}`] as const,
-      },
-      // FundingPool balance for the project (used in analytics/withdraw flow)
-      {
-        address: contracts.fundingPool,
-        abi: FundingPoolAbi,
-        functionName: "projectBalance" as const,
-        args: [projectAddress] as const,
-      },
     ] as const,
   });
 
-  const title = data?.[0]?.result as string | undefined;
-  const researcher = data?.[1]?.result as `0x${string}` | undefined;
-  const goalAmount = data?.[2]?.result as bigint | undefined;
-  const deadline = data?.[3]?.result as bigint | undefined;
-  const totalRaised = data?.[4]?.result as bigint | undefined;
-  const status = data?.[5]?.result as number | undefined;
-  const fundingPool = data?.[6]?.result as `0x${string}` | undefined;
-  const myContribution = address ? (data?.[7]?.result as bigint | undefined) : undefined;
-  const poolBalance = data?.[8]?.result as bigint | undefined;
+  const title               = data?.[0]?.result as string | undefined;
+  const researcher          = data?.[1]?.result as `0x${string}` | undefined;
+  const projectStatus       = data?.[2]?.result as number | undefined;
+  const currentMilestoneIndex = data?.[3]?.result as bigint | undefined;
+  const milestoneCount      = data?.[4]?.result as bigint | undefined;
+  const totalRaised         = data?.[5]?.result as bigint | undefined;
+  const fundingPool         = data?.[6]?.result as `0x${string}` | undefined;
+
+  // Step 2 — once we know milestoneCount, read all milestones
+  const count = Number(milestoneCount ?? 0);
+  const milestoneContracts = Array.from({ length: count }, (_, i) => ({
+    address: projectAddress,
+    abi: ResearchProjectAbi,
+    functionName: "getMilestone" as const,
+    args: [BigInt(i)] as const,
+  }));
+
+  const { data: milestoneData, isLoading: loadingMilestones, refetch: refetchMilestones } = useReadContracts({
+    contracts: milestoneContracts,
+    query: { enabled: count > 0 },
+  });
+
+  // Step 3 — for each milestone, read the connected user's donation and vote state
+  const currentIdx = Number(currentMilestoneIndex ?? 0);
+  const caller = (address ?? zero) as `0x${string}`;
+
+  // Build per-milestone user reads (donations + voted for all milestones)
+  const userPerMilestoneContracts = Array.from({ length: count }, (_, i) => ([
+    {
+      address: projectAddress,
+      abi: ResearchProjectAbi,
+      functionName: "donations" as const,
+      args: [BigInt(i), caller] as const,
+    },
+    {
+      address: projectAddress,
+      abi: ResearchProjectAbi,
+      functionName: "voted" as const,
+      args: [BigInt(i), caller] as const,
+    },
+  ])).flat();
+
+  const { data: userMilestoneData, isLoading: loadingUserData, refetch: refetchUserData } = useReadContracts({
+    contracts: userPerMilestoneContracts,
+    query: { enabled: count > 0 },
+  });
+
+  // Parse milestones
+  const milestones: Milestone[] = [];
+  if (milestoneData) {
+    for (let i = 0; i < count; i++) {
+      const raw = milestoneData[i]?.result as {
+        title: string; goal: bigint; deadline: bigint; raised: bigint;
+        votesYes: bigint; votesNo: bigint; proofUri: string; status: number;
+      } | undefined;
+      if (raw) {
+        milestones.push({
+          title:    raw.title,
+          goal:     raw.goal,
+          deadline: raw.deadline,
+          raised:   raw.raised,
+          votesYes: raw.votesYes,
+          votesNo:  raw.votesNo,
+          proofUri: raw.proofUri,
+          status:   raw.status as MilestoneStatus,
+        });
+      }
+    }
+  }
+
+  // Parse per-milestone user data (2 entries per milestone: donations, voted)
+  const myDonationsPerMilestone: bigint[] = Array.from({ length: count }, (_, i) =>
+    (userMilestoneData?.[i * 2]?.result as bigint | undefined) ?? 0n
+  );
+  const hasVotedPerMilestone: boolean[] = Array.from({ length: count }, (_, i) =>
+    (userMilestoneData?.[i * 2 + 1]?.result as boolean | undefined) ?? false
+  );
+
+  const myCurrentDonation = address ? myDonationsPerMilestone[currentIdx] : undefined;
+  const hasVoted          = address ? hasVotedPerMilestone[currentIdx] : undefined;
+
+  // totalDisbursed = sum of raised for all Approved milestones (funds already sent to researcher)
+  const totalDisbursed: bigint = milestones
+    .filter(ms => ms.status === MilestoneStatus.Approved)
+    .reduce((acc, ms) => acc + ms.raised, 0n);
+
+  // yieldReceived = DKT routed to this project via staker yield donations (held in FundingPool)
+  const { data: yieldReceivedData, refetch: refetchYield } = useReadContract({
+    address: fundingPool,
+    abi: FundingPoolAbi,
+    functionName: "projectAllocations",
+    args: [projectAddress],
+    query: { enabled: !!fundingPool },
+  });
+  const yieldReceived = yieldReceivedData as bigint | undefined;
+
+  async function refetch() {
+    await refetchMeta();
+    await refetchMilestones();
+    await refetchUserData();
+    await refetchYield();
+  }
 
   return {
     title,
     researcher,
-    goalAmount,
-    deadline,
+    projectStatus,
+    currentMilestoneIndex: currentIdx,
+    milestoneCount: count,
     totalRaised,
-    status,
     fundingPool,
-    myContribution,
-    poolBalance,
-    isLoading,
+    totalDisbursed,
+    yieldReceived,
+    milestones,
+    myCurrentDonation,
+    myDonationsPerMilestone,
+    hasVoted,
+    hasVotedPerMilestone,
+    isLoading: loadingMeta || loadingMilestones || loadingUserData,
     refetch,
   };
 }

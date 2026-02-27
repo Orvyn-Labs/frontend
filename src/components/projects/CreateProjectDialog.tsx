@@ -18,7 +18,15 @@ import { Label } from "@/components/ui/label";
 import { TxButton } from "@/components/web3/TxButton";
 import { getContracts } from "@/lib/contracts";
 import { ProjectFactoryAbi } from "@/lib/abis";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2, Plus } from "lucide-react";
+
+interface MilestoneRow {
+  title: string;
+  goalDkt: string;
+  durationDays: string;
+}
+
+const DEFAULT_MILESTONE: MilestoneRow = { title: "", goalDkt: "", durationDays: "" };
 
 interface CreateProjectDialogProps {
   onCreated?: () => void;
@@ -30,8 +38,7 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
 
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [goalDkt, setGoalDkt] = useState("");
-  const [durationDays, setDurationDays] = useState("");
+  const [milestones, setMilestones] = useState<MilestoneRow[]>([{ ...DEFAULT_MILESTONE }]);
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
   const { writeContractAsync, isPending, error: writeError } = useWriteContract();
@@ -44,22 +51,51 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
     writeError ? "error" :
     "idle";
 
+  const isBusy = txState === "pending" || txState === "confirming";
+
+  // Validate: project title + all milestone rows must be filled
   const isFormValid =
     title.trim().length > 0 &&
-    goalDkt.trim().length > 0 && parseFloat(goalDkt) > 0 &&
-    durationDays.trim().length > 0 && parseInt(durationDays) > 0;
+    milestones.length > 0 &&
+    milestones.every(
+      (m) =>
+        m.title.trim().length > 0 &&
+        m.goalDkt.trim().length > 0 && parseFloat(m.goalDkt) > 0 &&
+        m.durationDays.trim().length > 0 && parseInt(m.durationDays) >= 1
+    );
+
+  function addMilestone() {
+    setMilestones((prev) => [...prev, { ...DEFAULT_MILESTONE }]);
+  }
+
+  function removeMilestone(idx: number) {
+    setMilestones((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function updateMilestone(idx: number, field: keyof MilestoneRow, value: string) {
+    setMilestones((prev) =>
+      prev.map((m, i) => (i === idx ? { ...m, [field]: value } : m))
+    );
+  }
 
   async function handleCreate() {
     if (!isFormValid) return;
     try {
-      const goalWei = parseEther(goalDkt);
-      const durationSeconds = BigInt(Math.floor(parseFloat(durationDays) * 24 * 60 * 60));
+      const milestoneTitles    = milestones.map((m) => m.title.trim());
+      const milestoneGoals     = milestones.map((m) => parseEther(m.goalDkt));
+      const milestoneDurations = milestones.map((m) =>
+        BigInt(Math.floor(parseFloat(m.durationDays) * 24 * 60 * 60))
+      );
 
       const hash = await writeContractAsync({
         address: contracts.projectFactory,
         abi: ProjectFactoryAbi,
         functionName: "createProject",
-        args: [title.trim(), goalWei, durationSeconds],
+        args: [title.trim(), milestoneTitles, milestoneGoals, milestoneDurations],
+        // Gas estimation is unreliable for BeaconProxy deployments — the EVM
+        // simulator inflates the estimate far beyond the per-tx limit (25M on Base).
+        // Actual median cost from benchmarks is ~525k; 800k gives a safe buffer.
+        gas: 800_000n,
       });
       setTxHash(hash);
     } catch (err) {
@@ -67,26 +103,20 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
     }
   }
 
-  function handleOpenChange(val: boolean) {
-    // Reset form when dialog closes, unless tx in progress
-    if (!val && txState !== "pending" && txState !== "confirming") {
-      setTitle("");
-      setGoalDkt("");
-      setDurationDays("");
-      setTxHash(undefined);
-    }
-    if (val || txState !== "pending") {
-      setOpen(val);
-    }
+  function resetForm() {
+    setTitle("");
+    setMilestones([{ ...DEFAULT_MILESTONE }]);
+    setTxHash(undefined);
   }
 
-  // Close dialog and notify parent after success
+  function handleOpenChange(val: boolean) {
+    if (!val && !isBusy) resetForm();
+    if (val || !isBusy) setOpen(val);
+  }
+
   function handleSuccessClose() {
     setOpen(false);
-    setTitle("");
-    setGoalDkt("");
-    setDurationDays("");
-    setTxHash(undefined);
+    resetForm();
     onCreated?.();
   }
 
@@ -99,11 +129,12 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Research Project</DialogTitle>
           <DialogDescription>
-            Deploy a new crowdfunding project on Base Sepolia. Anyone can create a project.
+            Deploy a new milestone-based crowdfunding project on Base Sepolia.
+            Each milestone has its own goal, duration, and donor vote for fund release.
           </DialogDescription>
         </DialogHeader>
 
@@ -121,7 +152,8 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
           </div>
         ) : (
           <>
-            <div className="space-y-4 py-2">
+            <div className="space-y-5 py-2">
+              {/* Project title */}
               <div className="space-y-1.5">
                 <Label htmlFor="project-title">Project Title</Label>
                 <Input
@@ -129,40 +161,99 @@ export function CreateProjectDialog({ onCreated }: CreateProjectDialogProps) {
                   placeholder="e.g. AI-driven drug discovery for tuberculosis"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  disabled={txState === "pending" || txState === "confirming"}
+                  disabled={isBusy}
                   maxLength={120}
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="goal-dkt">Funding Goal (DKT)</Label>
-                <Input
-                  id="goal-dkt"
-                  type="number"
-                  placeholder="1000"
-                  min="0"
-                  step="1"
-                  value={goalDkt}
-                  onChange={(e) => setGoalDkt(e.target.value)}
-                  disabled={txState === "pending" || txState === "confirming"}
-                />
-              </div>
+              {/* Milestone rows */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label>Milestones</Label>
+                  <span className="text-xs text-muted-foreground">
+                    Deadlines are cumulative (sequential)
+                  </span>
+                </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="duration-days">Duration (days)</Label>
-                <Input
-                  id="duration-days"
-                  type="number"
-                  placeholder="30"
-                  min="1"
-                  step="1"
-                  value={durationDays}
-                  onChange={(e) => setDurationDays(e.target.value)}
-                  disabled={txState === "pending" || txState === "confirming"}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Minimum 1 day. The deadline is set relative to the block timestamp on creation.
-                </p>
+                {milestones.map((ms, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-blue-400 uppercase tracking-widest">
+                        Milestone {idx + 1}
+                      </span>
+                      {milestones.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeMilestone(idx)}
+                          disabled={isBusy}
+                          className="text-red-400 hover:text-red-300 transition-colors disabled:opacity-40"
+                          aria-label="Remove milestone"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor={`ms-title-${idx}`} className="text-xs">Title</Label>
+                      <Input
+                        id={`ms-title-${idx}`}
+                        placeholder="e.g. Literature review & dataset collection"
+                        value={ms.title}
+                        onChange={(e) => updateMilestone(idx, "title", e.target.value)}
+                        disabled={isBusy}
+                        maxLength={120}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor={`ms-goal-${idx}`} className="text-xs">Goal (DKT)</Label>
+                        <Input
+                          id={`ms-goal-${idx}`}
+                          type="number"
+                          placeholder="500"
+                          min="0"
+                          step="1"
+                          value={ms.goalDkt}
+                          onChange={(e) => updateMilestone(idx, "goalDkt", e.target.value)}
+                          disabled={isBusy}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor={`ms-dur-${idx}`} className="text-xs">Duration (days)</Label>
+                        <Input
+                          id={`ms-dur-${idx}`}
+                          type="number"
+                          placeholder="30"
+                          min="1"
+                          step="1"
+                          value={ms.durationDays}
+                          onChange={(e) => updateMilestone(idx, "durationDays", e.target.value)}
+                          disabled={isBusy}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-dashed border-white/20 text-muted-foreground hover:text-foreground"
+                  onClick={addMilestone}
+                  disabled={isBusy || milestones.length >= 10}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Add Milestone
+                </Button>
               </div>
             </div>
 

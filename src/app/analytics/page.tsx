@@ -58,7 +58,7 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-muted-foreground text-sm max-w-2xl leading-relaxed font-medium">
                 Real-time on-chain performance metrics benchmarking gas consumption across four smart contract complexity layers: 
-                L1 (Direct) → L2 (Staking) → L3 (Yield Distribution) → L4 (Project Factory).
+                L1 (Direct Donate/Refund) → L2 (Staking) → L3 (Yield Distribution) → L4 (Voting / Factory Deployment).
               </p>
             </div>
             <button
@@ -87,8 +87,8 @@ export default function AnalyticsPage() {
             <StaggerItem>
               <section className="space-y-6 h-full">
                 <div className="space-y-1">
-                  <h3 className="font-black text-xl tracking-tight">L2 Execution Gas</h3>
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider opacity-60">Units consumed per function call</p>
+                  <h3 className="font-black text-xl tracking-tight">L1–L4 Execution Gas</h3>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider opacity-60">Units consumed per function call (median)</p>
                 </div>
                 <Card className="glass-morphism h-[450px] flex flex-col justify-center border-white/5 shadow-2xl hover:border-blue-500/20 transition-all duration-500 rounded-[2.5rem] overflow-hidden">
                   <CardContent className="pt-10">
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
             <div className="space-y-3">
               <h2 className="text-3xl font-black tracking-tight">Gas Snapshot Appendix</h2>
               <p className="text-sm text-muted-foreground font-medium max-w-xl">
-                Complete breakdown of L2 execution gas costs based on the latest Foundry benchmarks across all 4 contract complexity layers.
+                Complete breakdown of L2 execution gas costs based on the latest Foundry benchmarks across all 4 contract complexity layers (10 functions measured).
               </p>
             </div>
             <div className="rounded-[3rem] border border-white/5 overflow-hidden glass-morphism p-2 shadow-2xl">

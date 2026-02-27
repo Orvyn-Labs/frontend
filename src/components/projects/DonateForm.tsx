@@ -8,16 +8,29 @@ import { TxButton } from "@/components/web3/TxButton";
 import { ConnectPrompt } from "@/components/web3/ConnectPrompt";
 import { useDonate } from "@/hooks/useDonate";
 import { ProjectStatus } from "@/lib/utils";
+import { formatUnits } from "viem";
 
 interface DonateFormProps {
   projectAddress: `0x${string}`;
   status: number;
+  /** Current milestone goal in wei (18 decimals) */
+  goal?: bigint;
+  /** Current milestone raised in wei (18 decimals) */
+  raised?: bigint;
   onSuccess?: () => void;
 }
 
-export function DonateForm({ projectAddress, status, onSuccess }: DonateFormProps) {
+export function DonateForm({ projectAddress, status, goal, raised, onSuccess }: DonateFormProps) {
   const { isConnected, address } = useAccount();
   const [amount, setAmount] = useState("");
+
+  // Compute remaining capacity for the current milestone
+  const remaining: bigint | undefined =
+    goal !== undefined && raised !== undefined
+      ? goal > raised ? goal - raised : 0n
+      : undefined;
+  const remainingDkt = remaining !== undefined ? parseFloat(formatUnits(remaining, 18)) : undefined;
+  const goalReached = remaining !== undefined && remaining === 0n;
 
   const {
     approveDkt,
@@ -68,7 +81,16 @@ export function DonateForm({ projectAddress, status, onSuccess }: DonateFormProp
     );
   }
 
-  const isValidAmount = !!amount && parseFloat(amount) > 0;
+  if (goalReached) {
+    return (
+      <p className="text-sm text-green-400 text-center py-4 font-semibold">
+        Milestone goal reached — donations are closed for this milestone.
+      </p>
+    );
+  }
+
+  const isValidAmount = !!amount && parseFloat(amount) > 0 &&
+    (remainingDkt === undefined || parseFloat(amount) <= remainingDkt);
   const requiresApprove = isValidAmount && needsApprove(amount);
 
   // Label for the button — show "Approve" when approval is needed or in-progress
@@ -98,11 +120,17 @@ export function DonateForm({ projectAddress, status, onSuccess }: DonateFormProp
           type="number"
           placeholder="100"
           min="0"
+          max={remainingDkt !== undefined ? remainingDkt : undefined}
           step="1"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           disabled={txState === "pending" || txState === "confirming"}
         />
+        {remainingDkt !== undefined && (
+          <p className="text-xs text-muted-foreground">
+            Max <span className="text-blue-400 font-semibold">{remainingDkt.toLocaleString()} DKT</span> remaining toward goal
+          </p>
+        )}
         {isValidAmount && (
           <p className="text-xs text-muted-foreground">
             {requiresApprove

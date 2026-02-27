@@ -72,8 +72,7 @@ export default function ProjectsPage() {
                     <SelectContent className="glass-morphism border-white/10">
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value={ProjectStatus.Active.toString()}>Active</SelectItem>
-                      <SelectItem value={ProjectStatus.Succeeded.toString()}>Succeeded</SelectItem>
-                      <SelectItem value={ProjectStatus.Failed.toString()}>Failed</SelectItem>
+                      <SelectItem value={ProjectStatus.Completed.toString()}>Completed</SelectItem>
                       <SelectItem value={ProjectStatus.Cancelled.toString()}>Cancelled</SelectItem>
                     </SelectContent>
                   </Select>

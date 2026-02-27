@@ -5,8 +5,18 @@ export const ProjectFactoryAbi = [
   { type: "function", name: "FACTORY_ADMIN_ROLE", inputs: [], outputs: [{ name: "", type: "bytes32" }], stateMutability: "view" },
   { type: "function", name: "MIN_DURATION", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "MAX_DURATION", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  // createProject takes duration in SECONDS, not an absolute deadline
-  { type: "function", name: "createProject", inputs: [{ name: "title", type: "string" }, { name: "goalAmount", type: "uint256" }, { name: "duration", type: "uint256" }], outputs: [{ name: "projectAddr", type: "address" }], stateMutability: "nonpayable" },
+  // createProject takes milestone arrays (title, goals in DKT wei, durations in seconds)
+  {
+    type: "function", name: "createProject",
+    inputs: [
+      { name: "title",               type: "string"    },
+      { name: "milestoneTitles",     type: "string[]"  },
+      { name: "milestoneGoals",      type: "uint256[]" },
+      { name: "milestoneDurations",  type: "uint256[]" },
+    ],
+    outputs: [{ name: "projectAddr", type: "address" }],
+    stateMutability: "nonpayable",
+  },
   // getProjects is paginated: (offset, limit) → address[]
   { type: "function", name: "getProjects", inputs: [{ name: "offset", type: "uint256" }, { name: "limit", type: "uint256" }], outputs: [{ name: "page", type: "address[]" }], stateMutability: "view" },
   { type: "function", name: "totalProjects", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },

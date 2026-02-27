@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { FundingProgress } from "./FundingProgress";
 import { shortenAddress, formatDeadline, statusLabel, statusColor, isExpired } from "@/lib/utils";
 import type { ProjectData } from "@/hooks/useProjects";
-import { Clock, User } from "lucide-react";
+import { Clock, User, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface ProjectCardProps {
@@ -13,7 +13,9 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, index }: ProjectCardProps) {
-  const expired = isExpired(project.deadline);
+  const expired = isExpired(project.currentDeadline);
+  const hasActiveMilestone = project.currentDeadline > 0n;
+  const milestoneLabel = `Milestone ${Number(project.currentMilestoneIndex) + 1} / ${Number(project.milestoneCount)}`;
 
   return (
     <motion.div
@@ -39,22 +41,32 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
           </CardHeader>
 
           <CardContent className="flex-1 space-y-5">
+            {/* Current milestone funding progress */}
             <div className="space-y-2">
-              <FundingProgress raised={project.totalRaised} goal={project.goalAmount} />
+              <FundingProgress raised={project.currentRaised} goal={project.currentGoal} />
             </div>
 
             <div className="space-y-2 text-xs text-muted-foreground">
+              {/* Milestone counter */}
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
+                <Layers className="h-3.5 w-3.5 text-purple-400" />
+                <span className="font-mono">{milestoneLabel}</span>
+              </div>
+
               <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
                 <User className="h-3.5 w-3.5 text-blue-400" />
                 <span className="font-mono">{shortenAddress(project.researcher)}</span>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
-                <Clock className="h-3.5 w-3.5 text-amber-400" />
-                <span className={expired ? "text-red-400 font-semibold" : ""}>
-                  {expired ? "Expired " : "Deadline: "}
-                  {formatDeadline(project.deadline)}
-                </span>
-              </div>
+
+              {hasActiveMilestone && (
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
+                  <Clock className="h-3.5 w-3.5 text-amber-400" />
+                  <span className={expired ? "text-red-400 font-semibold" : ""}>
+                    {expired ? "Expired " : "Deadline: "}
+                    {formatDeadline(project.currentDeadline)}
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
 

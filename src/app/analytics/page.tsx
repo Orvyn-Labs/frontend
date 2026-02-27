@@ -10,7 +10,7 @@ import { TxComplexityTable } from "@/components/analytics/TxComplexityTable";
 import { GAS_SNAPSHOT, LAYER_COLORS } from "@/hooks/useAnalytics";
 import { formatGas } from "@/lib/utils";
 import { Info, Download } from "lucide-react";
-import { FadeIn, StaggerContainer, StaggerItem } from "@/components/ui/motion";
+import { FadeIn, StaggerContainer, StaggerItem, ParallaxBackground } from "@/components/ui/motion";
 
 // O(1) scaling evidence data — gas cost stays flat as staker count grows
 const SCALING_EVIDENCE = [
@@ -44,135 +44,140 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-      {/* Header */}
-      <FadeIn>
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-black tracking-tight">Analytics</h1>
-              <NetworkBadge />
+    <div className="relative min-h-[calc(100vh-64px)] overflow-hidden">
+      <ParallaxBackground />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 relative">
+        {/* Header */}
+        <FadeIn>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <h1 className="text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">Analytics</h1>
+                <NetworkBadge />
+              </div>
+              <p className="text-muted-foreground text-sm max-w-2xl leading-relaxed font-medium">
+                Real-time on-chain performance metrics benchmarking gas consumption across four smart contract complexity layers: 
+                L1 (Direct) → L2 (Staking) → L3 (Yield Distribution) → L4 (Project Factory).
+              </p>
             </div>
-            <p className="text-muted-foreground text-sm max-w-2xl leading-relaxed">
-              Real-time on-chain performance metrics. This data benchmark gas consumption across four smart contract complexity layers: 
-              L1 (Direct) → L2 (Staking) → L3 (Yield Distribution) → L4 (Project Factory).
-            </p>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2.5 text-xs font-black uppercase tracking-widest border border-white/10 bg-white/5 rounded-2xl px-6 py-3.5 hover:bg-white/10 hover:border-white/20 transition-all shadow-xl group"
+            >
+              <Download className="h-4 w-4 text-blue-400 group-hover:scale-110 transition-transform" /> Export JSON Registry
+            </button>
           </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 text-sm font-bold border border-blue-500/20 bg-blue-500/5 rounded-xl px-5 py-2.5 hover:bg-blue-500/10 hover:border-blue-500/40 transition-all shadow-sm glow"
-          >
-            <Download className="h-4 w-4" /> Export JSON
-          </button>
-        </div>
-      </FadeIn>
+        </FadeIn>
 
-      {/* Live Pool Stats */}
-      <FadeIn delay={0.1}>
-        <section className="space-y-4">
-          <h2 className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">
-            Network State
-          </h2>
-          <PoolStats />
-        </section>
-      </FadeIn>
+        {/* Live Pool Stats */}
+        <FadeIn delay={0.1}>
+          <section className="space-y-6">
+            <h2 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              Real-time Protocol State
+            </h2>
+            <PoolStats />
+          </section>
+        </FadeIn>
 
-      <StaggerContainer delay={0.2}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Gas Bar Chart */}
-          <StaggerItem>
-            <section className="space-y-4 h-full">
-              <div className="space-y-1">
-                <h3 className="font-bold text-lg">L2 Execution Gas</h3>
-                <p className="text-xs text-muted-foreground">Units consumed per function call</p>
-              </div>
-              <Card className="glass-morphism h-[400px] flex flex-col justify-center">
-                <CardContent className="pt-6">
-                  <GasBarChart />
-                  <div className="flex flex-wrap gap-4 mt-6 justify-center">
-                    {Object.entries(LAYER_COLORS).map(([layer, color]) => (
-                      <div key={layer} className="flex items-center gap-1.5 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                        <span className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]" style={{ backgroundColor: color }} />
-                        {layer}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-          </StaggerItem>
-
-          {/* O(1) Scaling Evidence */}
-          <StaggerItem>
-            <section className="space-y-4 h-full">
-              <div className="space-y-1">
-                <h3 className="font-bold text-lg">O(1) Scaling Benchmark</h3>
-                <p className="text-xs text-muted-foreground">Reward index verification at scale</p>
-              </div>
-              <Card className="glass-morphism h-[400px] overflow-hidden flex flex-col">
-                <CardHeader className="pb-3 border-b border-white/5">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-bold">Reward Index Variance</CardTitle>
-                    <Badge variant="outline" className="text-green-400 border-green-500/30 bg-green-500/5 text-[10px] font-black uppercase tracking-tighter">
-                      O(1) Confirmed
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-[10px] uppercase tracking-widest font-semibold mt-1">
-                    Max variance: stake ±{formatGas(stakeMax - stakeMin)} gas | claimYield ±{formatGas(claimMax - claimMin)} gas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-auto pt-4">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="text-left border-b border-white/5 opacity-50">
-                        <th className="pb-3 pr-4 font-black uppercase tracking-widest">Stakers (N)</th>
-                        <th className="pb-3 pr-4 font-black uppercase tracking-widest">stake() gas</th>
-                        <th className="pb-3 font-black uppercase tracking-widest text-right">claimYield() gas</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {SCALING_EVIDENCE.map((row) => (
-                        <tr key={row.n} className="hover:bg-white/5 transition-colors">
-                          <td className="py-3 pr-4 font-mono font-bold text-muted-foreground">{row.n}</td>
-                          <td className="py-3 pr-4 font-mono font-bold" style={{ color: LAYER_COLORS.L2 }}>
-                            {formatGas(row.stakeGas)}
-                          </td>
-                          <td className="py-3 font-mono font-bold text-right" style={{ color: LAYER_COLORS.L3 }}>
-                            {formatGas(row.claimGas)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </CardContent>
-                <div className="p-4 bg-blue-500/10 border-t border-white/5 flex gap-3">
-                  <Info className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
-                  <p className="text-[10px] leading-relaxed text-muted-foreground">
-                    Gas variation of &lt; 0.02% across N=1 to N=100 confirms that the reward index achieves 
-                    true <span className="text-white font-bold italic">O(1) scaling</span>, minimizing operational 
-                    cost for Indonesian researchers.
-                  </p>
+        <StaggerContainer delay={0.2} staggerDelay={0.1}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Gas Bar Chart */}
+            <StaggerItem>
+              <section className="space-y-6 h-full">
+                <div className="space-y-1">
+                  <h3 className="font-black text-xl tracking-tight">L2 Execution Gas</h3>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider opacity-60">Units consumed per function call</p>
                 </div>
-              </Card>
-            </section>
-          </StaggerItem>
-        </div>
-      </StaggerContainer>
+                <Card className="glass-morphism h-[450px] flex flex-col justify-center border-white/5 shadow-2xl hover:border-blue-500/20 transition-all duration-500 rounded-[2.5rem] overflow-hidden">
+                  <CardContent className="pt-10">
+                    <GasBarChart />
+                    <div className="flex flex-wrap gap-6 mt-10 justify-center">
+                      {Object.entries(LAYER_COLORS).map(([layer, color]) => (
+                        <div key={layer} className="flex items-center gap-2 text-[10px] font-black tracking-[0.1em] text-muted-foreground uppercase">
+                          <span className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.1)]" style={{ backgroundColor: color }} />
+                          {layer}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            </StaggerItem>
 
-      {/* Full Complexity Table */}
-      <FadeIn delay={0.5}>
-        <section className="space-y-6 pt-8">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black tracking-tight">Gas Snapshot Appendix</h2>
-            <p className="text-sm text-muted-foreground">
-              Complete breakdown of L2 execution gas costs based on the latest Foundry benchmarks.
-            </p>
+            {/* O(1) Scaling Evidence */}
+            <StaggerItem>
+              <section className="space-y-6 h-full">
+                <div className="space-y-1">
+                  <h3 className="font-black text-xl tracking-tight">O(1) Scaling Benchmark</h3>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider opacity-60">Reward index verification at scale</p>
+                </div>
+                <Card className="glass-morphism h-[450px] overflow-hidden flex flex-col border-white/5 shadow-2xl hover:border-violet-500/20 transition-all duration-500 rounded-[2.5rem]">
+                  <CardHeader className="pb-4 pt-8 border-b border-white/5 px-8">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-80">Reward Index Variance</CardTitle>
+                      <Badge variant="outline" className="text-green-400 border-green-500/30 bg-green-500/5 text-[10px] font-black uppercase tracking-tighter px-2.5 py-1 rounded-full">
+                        O(1) Confirmed
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-[10px] uppercase tracking-widest font-black text-white/40 mt-2">
+                      Max variance: stake ±{formatGas(stakeMax - stakeMin)} gas | claimYield ±{formatGas(claimMax - claimMin)} gas
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-auto pt-6 px-8">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-left border-b border-white/5 opacity-50">
+                          <th className="pb-4 pr-4 font-black uppercase tracking-widest text-[10px]">Stakers (N)</th>
+                          <th className="pb-4 pr-4 font-black uppercase tracking-widest text-[10px]">stake() gas</th>
+                          <th className="pb-4 font-black uppercase tracking-widest text-right text-[10px]">claimYield() gas</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {SCALING_EVIDENCE.map((row) => (
+                          <tr key={row.n} className="hover:bg-white/5 transition-colors group">
+                            <td className="py-4 pr-4 font-mono font-bold text-muted-foreground group-hover:text-white transition-colors">{row.n}</td>
+                            <td className="py-4 pr-4 font-mono font-bold" style={{ color: LAYER_COLORS.L2 }}>
+                              {formatGas(row.stakeGas)}
+                            </td>
+                            <td className="py-4 font-mono font-bold text-right" style={{ color: LAYER_COLORS.L3 }}>
+                              {formatGas(row.claimGas)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </CardContent>
+                  <div className="p-8 bg-blue-500/10 border-t border-white/5 flex gap-4">
+                    <Info className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
+                    <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
+                      Gas variation of &lt; 0.02% across N=1 to N=100 confirms that the reward index achieves 
+                      true <span className="text-white font-black italic">O(1) scaling</span>, minimizing operational 
+                      cost for Indonesian researchers as the protocol scales.
+                    </p>
+                  </div>
+                </Card>
+              </section>
+            </StaggerItem>
           </div>
-          <div className="rounded-3xl border border-white/5 overflow-hidden glass-morphism p-1">
-            <TxComplexityTable />
-          </div>
-        </section>
-      </FadeIn>
+        </StaggerContainer>
+
+        {/* Full Complexity Table */}
+        <FadeIn delay={0.5}>
+          <section className="space-y-8 pt-12">
+            <div className="space-y-3">
+              <h2 className="text-3xl font-black tracking-tight">Gas Snapshot Appendix</h2>
+              <p className="text-sm text-muted-foreground font-medium max-w-xl">
+                Complete breakdown of L2 execution gas costs based on the latest Foundry benchmarks across all 4 contract complexity layers.
+              </p>
+            </div>
+            <div className="rounded-[3rem] border border-white/5 overflow-hidden glass-morphism p-2 shadow-2xl">
+              <TxComplexityTable />
+            </div>
+          </section>
+        </FadeIn>
+      </div>
     </div>
   );
 }

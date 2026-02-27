@@ -14,7 +14,7 @@ export function useProject(projectAddress: `0x${string}`) {
 
   // Build flat contracts array — wagmi strict typing works best with a stable shape
   // Indices: 0=title 1=researcher 2=goalAmount 3=deadline 4=totalRaised 5=status
-  //          6=fundingPool 7=donations(caller) 8=fundsWithdrawn
+  //          6=fundingPool 7=donations(caller)
   const { data, isLoading, refetch } = useReadContracts({
     contracts: [
       { address: projectAddress, abi: ResearchProjectAbi, functionName: "title" as const },
@@ -30,7 +30,6 @@ export function useProject(projectAddress: `0x${string}`) {
         functionName: "donations" as const,
         args: [(address ?? zero) as `0x${string}`] as const,
       },
-      { address: projectAddress, abi: ResearchProjectAbi, functionName: "fundsWithdrawn" as const },
       // FundingPool balance for the project (used in analytics/withdraw flow)
       {
         address: contracts.fundingPool,
@@ -49,8 +48,7 @@ export function useProject(projectAddress: `0x${string}`) {
   const status = data?.[5]?.result as number | undefined;
   const fundingPool = data?.[6]?.result as `0x${string}` | undefined;
   const myContribution = address ? (data?.[7]?.result as bigint | undefined) : undefined;
-  const fundsWithdrawn = data?.[8]?.result as boolean | undefined;
-  const poolBalance = data?.[9]?.result as bigint | undefined;
+  const poolBalance = data?.[8]?.result as bigint | undefined;
 
   return {
     title,
@@ -61,7 +59,6 @@ export function useProject(projectAddress: `0x${string}`) {
     status,
     fundingPool,
     myContribution,
-    fundsWithdrawn,
     poolBalance,
     isLoading,
     refetch,

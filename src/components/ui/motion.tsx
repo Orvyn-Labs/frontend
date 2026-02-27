@@ -62,4 +62,37 @@ export const HoverScale = ({ children, scale = 1.02 }: { children: React.ReactNo
   </motion.div>
 );
 
+export const ParallaxBackground = () => (
+  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full -z-10 pointer-events-none overflow-hidden">
+    <motion.div
+      animate={{
+        scale: [1, 1.1, 1],
+        opacity: [0.3, 0.5, 0.3],
+        x: [0, 20, 0],
+        y: [0, -20, 0],
+      }}
+      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute -top-[5%] -left-[10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px]"
+    />
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        opacity: [0.2, 0.4, 0.2],
+        x: [0, -30, 0],
+        y: [0, 30, 0],
+      }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      className="absolute top-[20%] -right-[5%] w-[35%] h-[35%] bg-violet-500/10 rounded-full blur-[100px]"
+    />
+    <motion.div
+      animate={{
+        scale: [1, 1.15, 1],
+        opacity: [0.1, 0.2, 0.1],
+      }}
+      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      className="absolute bottom-[10%] left-[20%] w-[30%] h-[30%] bg-amber-500/5 rounded-full blur-[120px]"
+    />
+  </div>
+);
+
 export { motion, AnimatePresence };

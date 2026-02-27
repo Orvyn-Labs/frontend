@@ -8,7 +8,6 @@ export const ResearchProjectAbi = [
   { type: "function", name: "deadline", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "status", inputs: [], outputs: [{ name: "", type: "uint8" }], stateMutability: "view" },
   { type: "function", name: "projectId", inputs: [], outputs: [{ name: "", type: "bytes32" }], stateMutability: "view" },
-  { type: "function", name: "fundsWithdrawn", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
   { type: "function", name: "fundingPool", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
   { type: "function", name: "dkt", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
   { type: "function", name: "donations", inputs: [{ name: "donor", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },

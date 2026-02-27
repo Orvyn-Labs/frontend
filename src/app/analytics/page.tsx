@@ -38,7 +38,7 @@ export default function AnalyticsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "dchain-gas-metrics.json";
+    a.download = "orvyn-labs-gas-metrics.json";
     a.click();
     URL.revokeObjectURL(url);
   }

@@ -51,7 +51,7 @@ export function Navbar() {
             <div className="bg-blue-500 rounded-lg p-1 group-hover:rotate-12 transition-transform duration-300 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
               <FlaskConical className="h-5 w-5 text-white" />
             </div>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 group-hover:to-blue-400 transition-all">DChain</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 group-hover:to-blue-400 transition-all">Orvyn-Labs</span>
           </Link>
 
           {/* Nav links */}

@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DChain Research Funding",
+  title: "Orvyn-Labs Research Funding",
   description: "Decentralized research crowdfunding on Base Network — Bachelor Thesis Project",
 };
 

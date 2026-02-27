@@ -56,7 +56,7 @@ export default function Home() {
             </h2>
             <h3 className="text-3xl font-bold">Benchmark Layers</h3>
             <p className="text-muted-foreground max-w-xl">
-              DChain evaluates gas performance across four distinct smart contract complexity layers.
+              Orvyn-Labs evaluates gas performance across four distinct smart contract complexity layers.
             </p>
           </div>
 

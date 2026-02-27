@@ -10,7 +10,7 @@ export function Footer() {
               <div className="bg-blue-500/10 p-1.5 rounded-lg">
                 <FlaskConical className="h-5 w-5 text-blue-500" />
               </div>
-              <span className="font-black tracking-tight text-foreground text-base">DChain Research Funding</span>
+              <span className="font-black tracking-tight text-foreground text-base">Orvyn-Labs Research Funding</span>
             </div>
             <p className="max-w-[200px] leading-relaxed opacity-60">
               A decentralized protocol for Indonesian higher education research.
@@ -33,7 +33,7 @@ export function Footer() {
               <span>Shadcn/UI</span>
               <span>Framer Motion</span>
             </div>
-            <p className="mt-2 text-[10px] opacity-40">© 2026 DChain Protocol. All rights reserved.</p>
+            <p className="mt-2 text-[10px] opacity-40">© 2026 Orvyn-Labs Protocol. All rights reserved.</p>
           </div>
         </div>
       </div>

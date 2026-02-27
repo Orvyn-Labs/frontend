@@ -10,7 +10,7 @@ interface ConnectPromptProps {
 
 export function ConnectPrompt({
   title = "Connect your wallet",
-  description = "Connect your wallet to interact with the DChain research funding platform.",
+  description = "Connect your wallet to interact with the Orvyn-Labs research funding platform.",
 }: ConnectPromptProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">

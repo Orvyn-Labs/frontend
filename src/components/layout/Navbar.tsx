@@ -8,7 +8,7 @@ import { useChainId } from "wagmi";
 import { cn, formatDkt } from "@/lib/utils";
 import { DiktiTokenAbi } from "@/lib/abis";
 import { getContracts } from "@/lib/contracts";
-import { FlaskConical } from "lucide-react";
+
 
 const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
@@ -47,10 +47,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 font-black text-xl tracking-tighter group shrink-0">
-            <div className="bg-blue-500 rounded-lg p-1 group-hover:rotate-12 transition-transform duration-300 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-              <FlaskConical className="h-5 w-5 text-white" />
-            </div>
+          <Link href="/" className="font-black text-xl tracking-tighter group shrink-0">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 group-hover:to-blue-400 transition-all">Orvyn-Labs</span>
           </Link>
 

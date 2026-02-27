@@ -30,16 +30,6 @@ export function HeroSection() {
       </div>
 
       <div className="text-center space-y-8 relative z-10">
-        <FadeIn delay={0.1}>
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm text-blue-400 glow">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            Deployed on Base Sepolia Testnet
-          </div>
-        </FadeIn>
-
         <StaggerContainer delay={0.2}>
           <StaggerItem>
             <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1]">
